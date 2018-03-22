@@ -38,7 +38,7 @@ EXPLORER_DIR="$HOME/BPL-explorer"
 PUBLIC_DIR="$HOME/BPL-explorer/public"
 SNAPDIR="snapshots"
 LOG="$HOME/snapshot.log"
-DATE=date +%Y-%m-%d\ %H:%M:%S
+DATE="date +%Y-%m-%d\ %H:%M:%S"
 
 #~ SEED NODES ~#
 
@@ -90,7 +90,7 @@ echo "$DATE -- Snapshot process started" >> $LOG
 
 [ -d $PUBLIC_DIR/$SNAPDIR ] && echo "$DATE -- Snapshot directory exists" >> $LOG || mkdir $PUBLIC_DIR/$SNAPDIR
 
-node=pgrep -a "node" | grep BPL-node | awk '{print $1}'
+node=`pgrep -a "node" | grep BPL-node | awk '{print $1}'`
 
 if [ "$node" == "" ] ; then
     node=0
