@@ -7,6 +7,8 @@ by tharude a.k.a The Forging Penguin
 
 11/03/2017 ARK Team
 
+Ported to Blockpool by billotronic
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 #~~~~~~~~~~~~~~~~~~~~ INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~#
@@ -29,22 +31,22 @@ Save the file with Ctrl+x and Y when you're done
 
 VARIABLES
 
-DB_NAME="ark_testnet"
+DB_NAME="bpl_mainnet"
 HEIGHT="$(psql -d $DB_NAME -t -c 'select height from blocks order by height desc limit 1;' | xargs)"
-NODE_DIR="$HOME/ark-node"
-EXPLORER_DIR="$HOME/ark-explorer"
-PUBLIC_DIR="$HOME/ark-explorer/public"
+NODE_DIR="$HOME/BPL-node"
+EXPLORER_DIR="$HOME/BPL-explorer"
+PUBLIC_DIR="$HOME/BPL-explorer/public"
 SNAPDIR="snapshots"
 LOG="$HOME/snapshot.log"
 DATE=date +%Y-%m-%d\ %H:%M:%S
 
 #~ SEED NODES ~#
 
-seed0=("5.39.9.245:4000" "seed01")
-seed1=("5.39.9.246:4000" "seed02")
-seed2=("5.39.9.247:4000" "seed03")
-seed3=("5.39.9.248:4000" "seed04")
-seed4=("5.39.9.249:4000" "seed05")
+seed0=("54.219.247.231:9030" "seed01")
+seed1=("54.241.220.135:9030" "seed02")
+seed2=("54.241.232.217:9030" "seed03")
+seed3=("54.241.43.96:9030" "seed04")
+seed4=("54.241.69.119:9030" "seed05")
 
 #~ API CALL ~#
 
@@ -88,16 +90,16 @@ echo "$DATE -- Snapshot process started" >> $LOG
 
 [ -d $PUBLIC_DIR/$SNAPDIR ] && echo "$DATE -- Snapshot directory exists" >> $LOG || mkdir $PUBLIC_DIR/$SNAPDIR
 
-node=pgrep -a "node" | grep ark-node | awk '{print $1}'
+node=pgrep -a "node" | grep BPL-node | awk '{print $1}'
 
 if [ "$node" == "" ] ; then
     node=0
-    echo "$DATE -- No ARK Node process is running! Starting..." >> $LOG
-    forever --plain start app.js --genesis genesisBlock.testnet.json --config config.testnet.json >> $LOG 2>&1
-    explorer=`pgrep -a "node" | grep ark-explorer | awk '{print $1}'`
+    echo "$DATE -- No Blockpool Node process is running! Starting..." >> $LOG
+    forever --plain start app.js --genesis genesisBlock.mainnet.json --config config.mainnet.json >> $LOG 2>&1
+    explorer=`pgrep -a "node" | grep BPL-explorer | awk '{print $1}'`
     if [ "$explorer" == "" ] ; then
         explorer=0
-        echo "$DATE -- No ARK Explorer process is running! Starting..." >> $LOG
+        echo "$DATE -- No Blockpool Explorer process is running! Starting..." >> $LOG
         cd $EXPLORER_DIR
         NODE_ENV=production forever --plain start app.js >> $LOG 2>&1
         cd $HOME
@@ -105,7 +107,7 @@ if [ "$node" == "" ] ; then
 else
     forever_process=`forever --plain list | grep $node | sed -nr 's/.*\[(.*)\].*/\1/p'`
     if [ "$HEIGHT" == "$highest" ]; then
-        echo "$DATE -- ARK Node process is running with forever PID: $forever_process" >> $LOG
+        echo "$DATE -- Blockpool Node process is running with forever PID: $forever_process" >> $LOG
         echo "$DATE -- Local DB Blockheight: $HEIGHT -- Network Blockheight: $highest" >> $LOG
         cd $NODE_DIR
         echo "$DATE -- Snapshot creation path: $PUBLIC_DIR/$DB_NAME"_"$HEIGHT" >> $LOG
@@ -113,14 +115,14 @@ else
         forever --plain stop $forever_process >> $LOG 2>&1
         sleep 1
         echo "$DATE -- Dump of $DB_NAME at height $HEIGHT started" >> $LOG
-        pg_dump -O ark_testnet -Fc -Z6 > $PUBLIC_DIR/$SNAPDIR/$DB_NAME"_"$HEIGHT
+        pg_dump -O bpl_mainnet -Fc -Z6 > $PUBLIC_DIR/$SNAPDIR/$DB_NAME"_"$HEIGHT
         echo "$DATE -- Dump of $DB_NAME at height $HEIGHT finished" >> $LOG
         sleep 1
         echo "$DATE -- Relinking CURRENT to $DB_NAME"_"$HEIGHT" >> $LOG
         rm $PUBLIC_DIR/current
         ln -s $PUBLIC_DIR/$SNAPDIR/$DB_NAME"_"$HEIGHT $PUBLIC_DIR/current
-        echo "$DATE -- Starting ARK Node process..." >> $LOG
-        forever --plain start app.js --genesis genesisBlock.testnet.json --config config.testnet.json >> $LOG 2>&1
+        echo "$DATE -- Starting Blockpool Node process..." >> $LOG
+        forever --plain start app.js --genesis genesisBlock.mainnet.json --config config.mainnet.json >> $LOG 2>&1
         echo "$DATE -- Cleaning up old snapshots..." >> $LOG
         find $PUBLIC_DIR/$SNAPDIR -maxdepth 1 -mmin +60 -type f -exec ls -lt {} + | grep -v ":00" | awk '{ print $9}' | xargs -r rm
         find $PUBLIC_DIR/$SNAPDIR -maxdepth 1 -ctime +3 -type f -exec ls -lt {} + | awk '{ print $9}' | xargs -r rm
