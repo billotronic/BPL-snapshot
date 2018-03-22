@@ -29,7 +29,7 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-VARIABLES
+#VARIABLES
 
 DB_NAME="bpl_mainnet"
 HEIGHT="$(psql -d $DB_NAME -t -c 'select height from blocks order by height desc limit 1;' | xargs)"
@@ -57,11 +57,11 @@ apicall="/api/loader/status/sync"
 declare -a nodes=(seed0[@] seed1[@] seed2[@] seed3[@] seed4[@])
 declare -a height=()
 
-Get array length
+#Get array length
 
 arraylength=${#nodes[@]}
 
-Spawning curl netheight processes loop
+#Spawning curl netheight processes loop
 
 for n in {1..$arraylength..$arraylength}; do
     for (( i=1; i<${arraylength}+1; i++ )); do
@@ -70,20 +70,20 @@ for n in {1..$arraylength..$arraylength}; do
     done
     wait
 done
-Array read
+#Array read
 
 while read ind line; do
 height[$ind]=$line # assign array values
 done < $HOME/tout.txt
 rm $HOME/tout.txt
 
-Finding the highest block
+#Finding the highest block
 
 IFS=$'\n'
 highest=($(sort -nr <<<"${height[*]}"))
 unset IFS
 
-~~~~~ SNAPSHOT ~~~~~
+#~~~~~ SNAPSHOT ~~~~~
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" >> $LOG
 echo "$DATE -- Snapshot process started" >> $LOG
